@@ -2,11 +2,19 @@
 Photonic circuit simulation and hardware-in-the-loop testing.
 """
 
-import torch
-import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
 import json
+
+try:
+    import torch
+    import numpy as np
+    TORCH_AVAILABLE = True
+except ImportError:
+    # Mock when torch is not available
+    TORCH_AVAILABLE = False
+    torch = None
+    np = None
 
 
 class PhotonicDevice(Enum):
@@ -78,7 +86,7 @@ class PhotonicSimulator:
         
     def simulate(self,
                  photonic_circuit,
-                 test_inputs: torch.Tensor,
+                 test_inputs,
                  metrics: List[str] = None) -> SimulationMetrics:
         """Simulate photonic circuit with test inputs"""
         if metrics is None:
@@ -224,7 +232,7 @@ class HardwareInterface:
     
     def execute(self,
                 photonic_circuit,
-                test_inputs: torch.Tensor,
+                test_inputs,
                 power_limit: float = 100.0) -> SimulationMetrics:
         """Execute circuit on photonic hardware"""
         if not self.is_connected:
