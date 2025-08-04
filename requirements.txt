@@ -1,0 +1,30 @@
+# Core dependencies
+torch>=1.13.0
+numpy>=1.21.0
+pybind11>=2.10.0
+
+# System monitoring and utilities
+psutil>=5.9.0
+
+# Logging
+python-json-logger>=2.0.0
+
+# Optional dependencies for full functionality
+# Uncomment as needed:
+
+# For advanced optimization
+# scipy>=1.9.0
+# scikit-learn>=1.1.0
+
+# For visualization and analysis
+# matplotlib>=3.5.0
+# seaborn>=0.11.0
+# pandas>=1.4.0
+
+# For hardware integration
+# pyserial>=3.5
+# pyvisa>=1.12.0
+
+# For distributed computing
+# ray>=2.0.0
+# dask>=2022.8.0

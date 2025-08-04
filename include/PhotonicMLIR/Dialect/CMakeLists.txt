@@ -1,0 +1,10 @@
+set(LLVM_TARGET_DEFINITIONS PhotonicOps.td)
+mlir_tablegen(PhotonicOps.h.inc -gen-op-decls)
+mlir_tablegen(PhotonicOps.cpp.inc -gen-op-defs)
+mlir_tablegen(PhotonicDialect.h.inc -gen-dialect-decls)
+mlir_tablegen(PhotonicDialect.cpp.inc -gen-dialect-defs)
+mlir_tablegen(PhotonicTypes.h.inc -gen-typedef-decls)
+mlir_tablegen(PhotonicTypes.cpp.inc -gen-typedef-defs)
+add_public_tablegen_target(MLIRPhotonicOpsIncGen)
+
+add_dependencies(mlir-headers MLIRPhotonicOpsIncGen)
