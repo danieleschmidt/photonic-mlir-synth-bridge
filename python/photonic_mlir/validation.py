@@ -2,11 +2,20 @@
 Input validation and sanitization for Photonic MLIR compiler.
 """
 
-import torch
-import torch.nn as nn
-import numpy as np
 from typing import List, Dict, Any, Union, Optional
 import re
+
+try:
+    import torch
+    import torch.nn as nn
+    import numpy as np
+    TORCH_AVAILABLE = True
+except ImportError:
+    # Mock when torch is not available
+    TORCH_AVAILABLE = False
+    torch = None
+    nn = None
+    np = None
 
 from .exceptions import ValidationError, PowerBudgetExceededError, WavelengthConflictError
 
@@ -30,8 +39,11 @@ class InputValidator:
     MAX_POWER_BUDGET = 1000.0
     
     @staticmethod
-    def validate_model(model: nn.Module) -> Dict[str, Any]:
+    def validate_model(model) -> Dict[str, Any]:
         """Validate PyTorch model for photonic compilation"""
+        if not TORCH_AVAILABLE:
+            raise ValidationError("PyTorch not available for model validation")
+            
         if not isinstance(model, nn.Module):
             raise ValidationError(
                 "Model must be a PyTorch nn.Module",
@@ -67,7 +79,7 @@ class InputValidator:
         }
     
     @staticmethod
-    def _find_unsupported_operations(model: nn.Module) -> List[str]:
+    def _find_unsupported_operations(model) -> List[str]:
         """Find operations not supported by photonic backend"""
         unsupported = []
         
@@ -84,8 +96,11 @@ class InputValidator:
         return unsupported
     
     @staticmethod
-    def validate_input_tensor(tensor: torch.Tensor, name: str = "input") -> Dict[str, Any]:
+    def validate_input_tensor(tensor, name: str = "input") -> Dict[str, Any]:
         """Validate input tensor for photonic processing"""
+        if not TORCH_AVAILABLE:
+            raise ValidationError("PyTorch not available for tensor validation")
+            
         if not isinstance(tensor, torch.Tensor):
             raise ValidationError(
                 f"{name} must be a torch.Tensor",
@@ -133,7 +148,12 @@ class InputValidator:
     @staticmethod
     def validate_wavelengths(wavelengths: List[float], pdk: str = "AIM_Photonics_PDK") -> Dict[str, Any]:
         """Validate wavelength specifications"""
-        if not isinstance(wavelengths, (list, tuple, np.ndarray)):
+        # Check type - handle case where numpy is not available
+        valid_types = (list, tuple)
+        if TORCH_AVAILABLE and np is not None:
+            valid_types = (list, tuple, np.ndarray)
+        
+        if not isinstance(wavelengths, valid_types):
             raise ValidationError(
                 "Wavelengths must be a list, tuple, or numpy array",
                 parameter="wavelengths",
@@ -183,6 +203,7 @@ class InputValidator:
         
         return {
             "count": len(wavelengths),
+            "channel_count": len(wavelengths),  # Alias for compatibility
             "range": (min(wavelengths), max(wavelengths)),
             "spacing": [sorted_wl[i] - sorted_wl[i-1] for i in range(1, len(sorted_wl))],
             "valid": True

@@ -17,6 +17,23 @@ from .exceptions import ValidationError
 from .logging_config import get_logger
 
 
+def sanitize_input(input_string: str) -> str:
+    """Basic input sanitization utility"""
+    if not isinstance(input_string, str):
+        raise ValidationError("Input must be a string")
+    
+    # Remove potentially dangerous characters
+    sanitized = input_string.replace("../", "").replace("..\\", "")
+    sanitized = sanitized.replace(";", "").replace("|", "")
+    sanitized = sanitized.replace("$(", "").replace("`", "")
+    
+    # Limit length
+    if len(sanitized) > 1000:
+        sanitized = sanitized[:1000]
+    
+    return sanitized
+
+
 class SecurityConfig:
     """Security configuration settings"""
     

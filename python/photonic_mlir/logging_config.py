@@ -44,12 +44,21 @@ class PhotonicMLIRLogger:
             "detailed": {
                 "format": "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(funcName)s:%(lineno)d - %(message)s",
                 "datefmt": "%Y-%m-%d %H:%M:%S"
-            },
-            "json": {
-                "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                "format": "%(asctime)s %(name)s %(levelname)s %(module)s %(funcName)s %(lineno)d %(message)s"
-            } if enable_structured else "standard"
+            }
         }
+        
+        # Add JSON formatter only if pythonjsonlogger is available
+        if enable_structured:
+            try:
+                import pythonjsonlogger.jsonlogger
+                formatters["json"] = {
+                    "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+                    "format": "%(asctime)s %(name)s %(levelname)s %(module)s %(funcName)s %(lineno)d %(message)s"
+                }
+            except ImportError:
+                # Fall back to detailed formatter if JSON logger not available
+                formatters["json"] = formatters["detailed"]
+                enable_structured = False
         
         # Configure handlers
         handlers = {}

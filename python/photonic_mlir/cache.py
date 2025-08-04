@@ -1,5 +1,5 @@
 """
-Intelligent caching system for Photonic MLIR compilation and simulation.
+Advanced caching system for compiled circuits and optimization results.
 """
 
 import hashlib
@@ -15,7 +15,13 @@ from enum import Enum
 import weakref
 
 from .logging_config import get_logger
-from .security import SecureFileHandler
+
+
+try:
+    from .security import SecureFileHandler
+except ImportError:
+    # Fallback if security module has issues
+    SecureFileHandler = None
 
 
 class CachePolicy(Enum):
@@ -93,7 +99,7 @@ class InMemoryCache:
             self.logger.debug(f"Cache hit: {key}")
             return entry.value
     
-    def put(self, key: str, value: Any, ttl_seconds: Optional[float] = None) -> None:
+    def put(self, key: str, value: Any, ttl: Optional[float] = None, tags: Optional[List[str]] = None) -> bool:
         """Put value in cache"""
         with self._lock:
             # Calculate size
@@ -102,7 +108,7 @@ class InMemoryCache:
             except:
                 size_bytes = 1024  # Rough estimate if can't serialize
             
-            ttl = ttl_seconds or self.default_ttl_seconds
+            ttl_seconds = ttl or self.default_ttl_seconds
             
             # Create cache entry
             entry = CacheEntry(
@@ -127,6 +133,7 @@ class InMemoryCache:
             self._current_size_bytes += size_bytes
             
             self.logger.debug(f"Cache put: {key} ({size_bytes} bytes)")
+            return True
     
     def invalidate(self, key: str) -> bool:
         """Remove specific key from cache"""
@@ -616,3 +623,12 @@ def cached_simulation(func: Callable) -> Callable:
         return result
     
     return wrapper
+
+
+# Aliases for compatibility
+MemoryCache = InMemoryCache
+
+
+def get_circuit_cache():
+    """Get circuit cache instance"""
+    return get_cache_manager().compilation_cache

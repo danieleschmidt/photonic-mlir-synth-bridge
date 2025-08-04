@@ -2,14 +2,31 @@
 PyTorch frontend for photonic neural networks.
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from typing import List, Optional, Tuple
-import numpy as np
+from typing import List, Optional, Tuple, Dict, Any
+
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    import numpy as np
+    TORCH_AVAILABLE = True
+except ImportError:
+    # Mock torch when not available
+    TORCH_AVAILABLE = False
+    torch = None
+    nn = None
+    F = None
+    np = None
+    
+    # Mock Module class
+    class Module:
+        def __init__(self):
+            pass
+        def __call__(self, *args, **kwargs):
+            return self
 
 
-class PhotonicLayer(nn.Module):
+class PhotonicLayer(Module if not TORCH_AVAILABLE else nn.Module):
     """Base class for photonic neural network layers"""
     
     def __init__(self):
@@ -53,7 +70,7 @@ class PhotonicLinear(PhotonicLayer):
         else:
             self.register_parameter('bias', None)
             
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         # Simulate photonic matrix multiplication
         # In hardware, this would be implemented as MZI mesh
         
@@ -88,7 +105,7 @@ class PhotonicLinear(PhotonicLayer):
             
         return output
     
-    def _phases_to_unitary(self, phases: torch.Tensor) -> torch.Tensor:
+    def _phases_to_unitary(self, phases):
         """Convert phase matrix to unitary matrix (simplified)"""
         # This is a simplified conversion - in reality would use 
         # proper MZI mesh decomposition
@@ -113,7 +130,7 @@ class PhotonicConv2d(PhotonicLayer):
             out_channels
         )
         
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         batch_size, channels, height, width = x.shape
         
         # Extract patches (im2col operation)
@@ -143,7 +160,7 @@ class PhotonicReLU(PhotonicLayer):
         super().__init__()
         self.inplace = inplace
         
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         # In photonic hardware, ReLU can be implemented using
         # electro-optic modulators with nonlinear response
         # For now, use standard ReLU with added optical noise
@@ -175,7 +192,7 @@ class PhotonicBatchNorm1d(PhotonicLayer):
         self.register_buffer('running_mean', torch.zeros(num_features))
         self.register_buffer('running_var', torch.ones(num_features))
         
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         if self.training:
             mean = x.mean(dim=0, keepdim=True)
             var = x.var(dim=0, keepdim=True, unbiased=False)
@@ -194,7 +211,7 @@ class PhotonicBatchNorm1d(PhotonicLayer):
         return output
 
 
-class PhotonicMLP(nn.Module):
+class PhotonicMLP(Module if not TORCH_AVAILABLE else nn.Module):
     """Multi-layer perceptron optimized for photonic implementation"""
     
     def __init__(self, input_size: int = 784, hidden_sizes: List[int] = None, 
@@ -230,14 +247,14 @@ class PhotonicMLP(nn.Module):
             if isinstance(layer, PhotonicLayer):
                 layer.set_wavelengths(wavelengths)
                 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         # Flatten input for MLP
         if x.dim() > 2:
             x = x.view(x.size(0), -1)
         return self.layers(x)
 
 
-class PhotonicCNN(nn.Module):
+class PhotonicCNN(Module if not TORCH_AVAILABLE else nn.Module):
     """Convolutional neural network optimized for photonic implementation"""
     
     def __init__(self, num_classes: int = 10, wavelengths: List[float] = None):
@@ -275,7 +292,7 @@ class PhotonicCNN(nn.Module):
             if isinstance(module, PhotonicLayer):
                 module.set_wavelengths(wavelengths)
                 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x):
         features = self.features(x)
         features = features.view(features.size(0), -1)
         output = self.classifier(features)
@@ -284,7 +301,7 @@ class PhotonicCNN(nn.Module):
 
 # Utility functions for photonic model analysis
 
-def estimate_photonic_power(model: nn.Module) -> float:
+def estimate_photonic_power(model) -> float:
     """Estimate total power consumption of photonic model"""
     total_power = 0.0
     
@@ -304,7 +321,7 @@ def estimate_photonic_power(model: nn.Module) -> float:
     return total_power
 
 
-def analyze_wavelength_utilization(model: nn.Module) -> Dict[str, int]:
+def analyze_wavelength_utilization(model) -> Dict[str, int]:
     """Analyze wavelength usage across photonic layers"""
     wavelength_usage = {}
     
