@@ -499,7 +499,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ```bibtex
 @inproceedings{photonic_mlir_2025,
   title={Photonic-MLIR: A Compiler Infrastructure for Silicon Photonic AI Accelerators},
-  author={Your Name et al.},
+  author={Daniel Schmidt},
   booktitle={International Symposium on Computer Architecture (ISCA)},
   year={2025}
 }
