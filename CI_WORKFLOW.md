@@ -1,3 +1,8 @@
+# CI/CD Pipeline Configuration
+
+Due to GitHub permissions requirements, the CI/CD workflow needs to be manually created. Here's the complete workflow configuration that should be placed in `.github/workflows/ci.yml`:
+
+```yaml
 name: CI/CD Pipeline
 
 on:
@@ -326,3 +331,33 @@ jobs:
         asset_path: ./photonic-mlir-${{ github.event.release.tag_name }}-source.tar.gz
         asset_name: photonic-mlir-${{ github.event.release.tag_name }}-source.tar.gz
         asset_content_type: application/gzip
+```
+
+## Manual Setup Instructions
+
+1. **Create the workflow file**:
+   - Go to your repository on GitHub
+   - Navigate to `.github/workflows/`
+   - Create a new file named `ci.yml`
+   - Copy the content from above
+
+2. **Configure secrets** (if needed):
+   - `DOCKER_USERNAME` and `DOCKER_PASSWORD` for Docker Hub
+   - `PYPI_TOKEN` for PyPI releases
+   - `CODECOV_TOKEN` for code coverage
+
+3. **Enable workflow permissions**:
+   - Go to repository Settings → Actions → General
+   - Under "Workflow permissions", select "Read and write permissions"
+   - Check "Allow GitHub Actions to create and approve pull requests"
+
+The CI/CD pipeline includes:
+- ✅ Code linting and type checking
+- ✅ Multi-platform testing (Ubuntu, macOS)  
+- ✅ Multi-version Python support (3.9, 3.10, 3.11)
+- ✅ MLIR compilation and testing
+- ✅ Security scanning
+- ✅ Docker image building
+- ✅ Performance benchmarking
+- ✅ Documentation building
+- ✅ Automated releases
