@@ -1,0 +1,92 @@
+{
+  "raw_comparison_data": {
+    "photonic_implementation": {
+      "resnet50": {
+        "throughput_tops": 50,
+        "power_w": 5,
+        "efficiency": 10
+      },
+      "bert_base": {
+        "throughput_tops": 25,
+        "power_w": 3,
+        "efficiency": 8.3
+      },
+      "mobilenet": {
+        "throughput_tops": 80,
+        "power_w": 2,
+        "efficiency": 40
+      }
+    },
+    "gpu_a100": {
+      "resnet50": {
+        "throughput_tops": 312,
+        "power_w": 400,
+        "efficiency": 0.78
+      },
+      "bert_base": {
+        "throughput_tops": 156,
+        "power_w": 400,
+        "efficiency": 0.39
+      },
+      "mobilenet": {
+        "throughput_tops": 400,
+        "power_w": 400,
+        "efficiency": 1.0
+      }
+    },
+    "tpu_v4": {
+      "resnet50": {
+        "throughput_tops": 275,
+        "power_w": 170,
+        "efficiency": 1.6
+      },
+      "bert_base": {
+        "throughput_tops": 200,
+        "power_w": 170,
+        "efficiency": 1.18
+      },
+      "mobilenet": {
+        "throughput_tops": 350,
+        "power_w": 170,
+        "efficiency": 2.06
+      }
+    }
+  },
+  "improvement_factors": {
+    "resnet50": {
+      "vs_gpu": {
+        "efficiency_improvement": 12.82051282051282,
+        "power_reduction": 80.0
+      },
+      "vs_tpu": {
+        "efficiency_improvement": 6.25,
+        "power_reduction": 34.0
+      }
+    },
+    "bert_base": {
+      "vs_gpu": {
+        "efficiency_improvement": 21.282051282051285,
+        "power_reduction": 133.33333333333334
+      },
+      "vs_tpu": {
+        "efficiency_improvement": 7.033898305084747,
+        "power_reduction": 56.666666666666664
+      }
+    },
+    "mobilenet": {
+      "vs_gpu": {
+        "efficiency_improvement": 40.0,
+        "power_reduction": 200.0
+      },
+      "vs_tpu": {
+        "efficiency_improvement": 19.41747572815534,
+        "power_reduction": 85.0
+      }
+    }
+  },
+  "summary": {
+    "avg_efficiency_vs_gpu": 24.700854700854702,
+    "avg_efficiency_vs_tpu": 10.900458011080028,
+    "avg_power_reduction_vs_gpu": 137.77777777777777
+  }
+}

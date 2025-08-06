@@ -8,6 +8,11 @@ to photonic circuits using MLIR infrastructure.
 from .compiler import PhotonicCompiler, PhotonicBackend
 from .optimization import OptimizationPipeline, PhotonicPasses
 from .simulation import PhotonicSimulator, HardwareInterface
+from .benchmarking import BenchmarkSuite, ModelBenchmark
+from .research import ResearchSuite, PhotonicVsElectronicComparison
+from .cache import get_cache_manager, cached_compilation, cached_simulation
+from .load_balancer import LoadBalancer, DistributedCompiler, create_local_cluster
+from .monitoring import get_metrics_collector, get_health_checker, performance_monitor
 
 try:
     from .pytorch_frontend import PhotonicLayer, PhotonicMLP, PhotonicConv2d
@@ -27,6 +32,19 @@ __all__ = [
     "PhotonicPasses",
     "PhotonicSimulator",
     "HardwareInterface",
+    "BenchmarkSuite",
+    "ModelBenchmark",
+    "ResearchSuite", 
+    "PhotonicVsElectronicComparison",
+    "get_cache_manager",
+    "cached_compilation",
+    "cached_simulation",
+    "LoadBalancer",
+    "DistributedCompiler",
+    "create_local_cluster",
+    "get_metrics_collector",
+    "get_health_checker",
+    "performance_monitor",
     "PhotonicLayer",
     "PhotonicMLP",
     "PhotonicConv2d",

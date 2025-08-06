@@ -1,0 +1,13 @@
+{
+  "total_runs": 18,
+  "successful_runs": 0,
+  "failed_runs": 18,
+  "avg_compilation_time": 0,
+  "avg_throughput": 0,
+  "avg_power_efficiency": 0,
+  "avg_accuracy": 0,
+  "best_throughput": 0,
+  "best_power_efficiency": 0,
+  "worst_case_latency": Infinity,
+  "best_case_latency": 0
+}

@@ -3,9 +3,21 @@ Pytest configuration and fixtures for Photonic MLIR tests.
 """
 
 import pytest
-import torch
-import torch.nn as nn
-import numpy as np
+try:
+    import torch
+    import torch.nn as nn
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    nn = None
+    TORCH_AVAILABLE = False
+
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    np = None
+    NUMPY_AVAILABLE = False
 import tempfile
 import shutil
 from pathlib import Path
@@ -17,9 +29,14 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'python'))
 
 from photonic_mlir.compiler import PhotonicCompiler, PhotonicBackend
-from photonic_mlir.pytorch_frontend import PhotonicMLP, PhotonicCNN
 from photonic_mlir.simulation import PhotonicSimulator
 from photonic_mlir.optimization import OptimizationPipeline
+
+if TORCH_AVAILABLE:
+    from photonic_mlir.pytorch_frontend import PhotonicMLP, PhotonicCNN
+else:
+    PhotonicMLP = None
+    PhotonicCNN = None
 
 
 @pytest.fixture(scope="session")
@@ -33,6 +50,9 @@ def temp_dir():
 @pytest.fixture
 def simple_model():
     """Create a simple PyTorch model for testing"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
+    
     model = nn.Sequential(
         nn.Linear(10, 5),
         nn.ReLU(),
@@ -45,6 +65,9 @@ def simple_model():
 @pytest.fixture
 def photonic_mlp():
     """Create a photonic MLP model for testing"""
+    if not TORCH_AVAILABLE or PhotonicMLP is None:
+        pytest.skip("PyTorch or PhotonicMLP not available")
+    
     model = PhotonicMLP(
         input_size=784,
         hidden_sizes=[256, 128],
@@ -58,6 +81,9 @@ def photonic_mlp():
 @pytest.fixture
 def photonic_cnn():
     """Create a photonic CNN model for testing"""
+    if not TORCH_AVAILABLE or PhotonicCNN is None:
+        pytest.skip("PyTorch or PhotonicCNN not available")
+    
     model = PhotonicCNN(
         num_classes=10,
         wavelengths=[1550.0, 1551.0, 1552.0, 1553.0]
@@ -69,18 +95,24 @@ def photonic_cnn():
 @pytest.fixture
 def example_input():
     """Create example input tensor"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
     return torch.randn(1, 10)
 
 
 @pytest.fixture
 def mnist_input():
     """Create MNIST-like input tensor"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
     return torch.randn(1, 1, 28, 28)
 
 
 @pytest.fixture
 def mlp_input():
     """Create MLP input tensor"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
     return torch.randn(1, 784)
 
 
@@ -138,6 +170,9 @@ def test_config():
 @pytest.fixture
 def large_model():
     """Create a larger model for performance testing"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
+    
     model = nn.Sequential(
         nn.Linear(1000, 512),
         nn.ReLU(),
@@ -154,6 +189,8 @@ def large_model():
 @pytest.fixture
 def performance_input():
     """Create large input for performance testing"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
     return torch.randn(100, 1000)
 
 
@@ -161,6 +198,8 @@ def performance_input():
 @pytest.fixture
 def test_matrices():
     """Generate test matrices for photonic operations"""
+    if not TORCH_AVAILABLE:
+        pytest.skip("PyTorch not available")
     return {
         "small": torch.randn(4, 4, dtype=torch.complex64),
         "medium": torch.randn(16, 16, dtype=torch.complex64),

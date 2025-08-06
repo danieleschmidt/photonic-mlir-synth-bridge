@@ -132,37 +132,118 @@ class PhotonicCompiler:
         self.wavelengths = wavelengths or [1550.0]  # Default C-band wavelength
         self.power_budget = power_budget
         
+        # Set up logging
+        from .logging_config import get_logger
+        self.logger = get_logger("photonic_mlir.compiler")
+        
     def compile(self, 
                 model: Any,
                 example_input: Any,
                 optimization_level: int = 2) -> PhotonicCircuit:
         """Compile PyTorch model to photonic circuit"""
         
-        if not TORCH_AVAILABLE:
-            # Mock implementation for testing
-            traced_model = model
-            example_input = MockTensor([1, 784])
-        else:
-            # Convert PyTorch model to computational graph
-            model.eval()
-            with torch.no_grad():
-                traced_model = torch.jit.trace(model, example_input)
+        # Validate inputs before compilation
+        from .validation import InputValidator
+        from .exceptions import ValidationError
+        from .security import create_secure_compilation_environment
+        from .monitoring import performance_monitor, get_metrics_collector
         
-        # Convert to MLIR (simplified for now)
-        mlir_module = self._convert_to_mlir(traced_model, example_input)
+        # Create secure environment
+        secure_env = create_secure_compilation_environment()
+        session = secure_env.create_compilation_session()
         
-        # Apply optimizations
-        if optimization_level > 0:
-            mlir_module = self._apply_optimizations(mlir_module, optimization_level)
-        
-        config = {
-            "backend": self.backend,
-            "wavelengths": self.wavelengths,
-            "power_budget": self.power_budget,
-            "optimization_level": optimization_level
-        }
-        
-        return PhotonicCircuit(mlir_module, config)
+        try:
+            with performance_monitor("model_compilation"):
+                # Validate inputs
+                if TORCH_AVAILABLE and model is not None:
+                    InputValidator.validate_model(model)
+                    InputValidator.validate_input_tensor(example_input, "example_input")
+                
+                InputValidator.validate_wavelengths(self.wavelengths)
+                InputValidator.validate_power_budget(self.power_budget)
+                InputValidator.validate_optimization_level(optimization_level)
+                
+                # Security validation
+                config = {
+                    "backend": self.backend,
+                    "wavelengths": self.wavelengths,
+                    "power_budget": self.power_budget,
+                    "optimization_level": optimization_level
+                }
+                
+                validation_results = secure_env.validate_compilation_inputs(
+                    model, example_input, config
+                )
+                
+                if not validation_results["overall_secure"]:
+                    raise ValidationError("Security validation failed for compilation inputs")
+                
+                if not TORCH_AVAILABLE:
+                    # Mock implementation for testing
+                    traced_model = model
+                    example_input = MockTensor([1, 784])
+                else:
+                    # Convert PyTorch model to computational graph
+                    model.eval()
+                    with torch.no_grad():
+                        traced_model = torch.jit.trace(model, example_input)
+                
+                # Convert to MLIR (simplified for now)
+                mlir_module = self._convert_to_mlir(traced_model, example_input)
+                
+                # Apply optimizations
+                if optimization_level > 0:
+                    mlir_module = self._apply_optimizations(mlir_module, optimization_level)
+                
+                circuit = PhotonicCircuit(mlir_module, config)
+                
+                # Validate final circuit
+                from .validation import CircuitValidator
+                CircuitValidator.validate_power_consumption(config)
+                
+                # Record compilation metrics
+                from .monitoring import CompilationMetrics
+                
+                comp_metrics = CompilationMetrics(
+                    model_name=type(model).__name__ if model else "MockModel",
+                    parameter_count=sum(p.numel() for p in model.parameters()) if hasattr(model, 'parameters') and TORCH_AVAILABLE else 1000,
+                    compilation_time_ms=0,  # Will be filled by performance monitor
+                    optimization_level=optimization_level,
+                    backend=self.backend.value,
+                    wavelength_count=len(self.wavelengths),
+                    power_budget_mw=self.power_budget,
+                    memory_peak_mb=0,  # Will be filled by performance monitor  
+                    success=True,
+                    mlir_size_bytes=len(mlir_module.encode('utf-8'))
+                )
+                
+                get_metrics_collector().record_compilation(comp_metrics)
+                
+                return circuit
+                
+        except Exception as e:
+            # Record failed compilation metrics
+            from .monitoring import CompilationMetrics
+            
+            failed_metrics = CompilationMetrics(
+                model_name=type(model).__name__ if model else "MockModel",
+                parameter_count=sum(p.numel() for p in model.parameters()) if hasattr(model, 'parameters') and TORCH_AVAILABLE else 0,
+                compilation_time_ms=0,
+                optimization_level=optimization_level,
+                backend=self.backend.value,
+                wavelength_count=len(self.wavelengths),
+                power_budget_mw=self.power_budget,
+                memory_peak_mb=0,
+                success=False,
+                mlir_size_bytes=0,
+                error_details=str(e)
+            )
+            
+            get_metrics_collector().record_compilation(failed_metrics)
+            self.logger.error(f"Compilation failed: {e}")
+            raise
+        finally:
+            secure_env.cleanup_session()
     
     def _convert_to_mlir(self, traced_model, example_input) -> str:
         """Convert traced PyTorch model to MLIR photonic dialect"""

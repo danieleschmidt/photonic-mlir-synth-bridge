@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: photonic-mlir
+  labels:
+    name: photonic-mlir
+    managed-by: kubectl
+    environment: production

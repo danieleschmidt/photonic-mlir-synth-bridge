@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: photonic-mlir
+  namespace: photonic-mlir
+  labels:
+    app: photonic-mlir
+    version: v0.1.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: photonic-mlir
+  template:
+    metadata:
+      labels:
+        app: photonic-mlir
+        version: v0.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: photonic-mlir
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: photonic-mlir
+        image: photonic-mlir:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: PHOTONIC_LOG_LEVEL
+          value: "INFO"
+        - name: PHOTONIC_CACHE_ENABLED
+          value: "true"
+        - name: PHOTONIC_CACHE_SIZE_MB
+          value: "1024"
+        - name: PHOTONIC_MAX_WORKERS
+          value: "4"
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: photonic-mlir-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: photonic-mlir-secrets
+              key: jwt-secret
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: logs
+          mountPath: /logs
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: cache
+          mountPath: /tmp/cache
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: photonic-mlir-data
+      - name: logs
+        persistentVolumeClaim:
+          claimName: photonic-mlir-logs
+      - name: config
+        configMap:
+          name: photonic-mlir-config
+      - name: cache
+        emptyDir:
+          sizeLimit: 2Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - photonic-mlir
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "compute-intensive"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        workload-type: compute-intensive

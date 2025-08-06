@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: photonic-mlir
+  namespace: photonic-mlir
+  labels:
+    app: photonic-mlir
+    service: photonic-mlir
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: metrics
+    protocol: TCP
+    name: metrics
+  selector:
+    app: photonic-mlir
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: photonic-mlir-headless
+  namespace: photonic-mlir
+  labels:
+    app: photonic-mlir
+    service: photonic-mlir-headless
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: metrics
+    protocol: TCP
+    name: metrics
+  selector:
+    app: photonic-mlir
