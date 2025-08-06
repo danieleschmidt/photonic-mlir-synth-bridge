@@ -1,0 +1,42 @@
+{
+  "scaling_data": [
+    {
+      "parameter_count": 1000,
+      "compilation_time": 0.1,
+      "memory_usage": 0.003814697265625,
+      "throughput": 100,
+      "power_consumption": 11.0,
+      "efficiency": 9090.909090909092
+    },
+    {
+      "parameter_count": 10000,
+      "compilation_time": 1.0,
+      "memory_usage": 0.03814697265625,
+      "throughput": 63.245553203367585,
+      "power_consumption": 16.309573444801934,
+      "efficiency": 3877.8177379939225
+    },
+    {
+      "parameter_count": 100000,
+      "compilation_time": 10.0,
+      "memory_usage": 0.3814697265625,
+      "throughput": 20.0,
+      "power_consumption": 49.810717055349734,
+      "efficiency": 401.52001782620346
+    },
+    {
+      "parameter_count": 1000000,
+      "compilation_time": 100.0,
+      "memory_usage": 3.814697265625,
+      "throughput": 6.324555320336759,
+      "power_consumption": 261.1886431509581,
+      "efficiency": 24.214511182560805
+    }
+  ],
+  "trends": {
+    "compilation_complexity": "O(n log n)",
+    "memory_complexity": "O(n)",
+    "throughput_scaling": "Diminishing returns with model size",
+    "power_scaling": "Sublinear due to optimizations"
+  }
+}
