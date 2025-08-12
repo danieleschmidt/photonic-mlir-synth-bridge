@@ -127,29 +127,81 @@ class PhotonicCircuitLearner:
         
         Uses machine learning to predict which optimization passes will be
         most effective for a circuit with given characteristics.
+        
+        GENERATION 2 ENHANCEMENTS:
+        - Comprehensive input validation and sanitization
+        - Robust error handling with graceful degradation
+        - Security checks to prevent injection attacks
+        - Confidence scoring and uncertainty quantification
         """
-        # Find similar patterns in memory
-        similar_patterns = self._find_similar_patterns(circuit_characteristics)
-        
-        if not similar_patterns:
-            # No similar patterns - use default heuristic
-            return self._default_optimization_sequence()
-        
-        # Weighted combination of successful sequences
-        sequence_scores = {}
-        for pattern in similar_patterns:
-            similarity = self._calculate_similarity(circuit_characteristics, pattern.input_characteristics)
-            weight = similarity * pattern.success_rate * (pattern.usage_count / 100)
+        try:
+            # ROBUST INPUT VALIDATION
+            validated_characteristics = self._validate_and_sanitize_characteristics(circuit_characteristics)
+            validated_objectives = self._validate_and_sanitize_objectives(target_objectives)
             
-            for pass_name in pattern.optimization_sequence:
-                sequence_scores[pass_name] = sequence_scores.get(pass_name, 0) + weight
-        
-        # Sort by score and create sequence
-        sorted_passes = sorted(sequence_scores.items(), key=lambda x: x[1], reverse=True)
-        predicted_sequence = [pass_name for pass_name, score in sorted_passes[:8]]  # Top 8 passes
-        
-        logger.info(f"Predicted optimization sequence with {len(predicted_sequence)} passes")
-        return predicted_sequence
+            # SECURITY: Check for malicious input patterns
+            if self._detect_malicious_patterns(validated_characteristics, validated_objectives):
+                logger.warning("Potentially malicious input detected - using safe defaults")
+                return self._get_safe_default_sequence()
+            
+            # Find similar patterns in memory with error handling
+            try:
+                similar_patterns = self._find_similar_patterns(validated_characteristics)
+            except Exception as e:
+                logger.error(f"Pattern matching failed: {e}")
+                similar_patterns = []
+            
+            if not similar_patterns:
+                logger.info("No similar patterns found - using enhanced default heuristic")
+                return self._enhanced_default_optimization_sequence(validated_characteristics)
+            
+            # ROBUST weighted combination of successful sequences
+            sequence_scores = {}
+            confidence_scores = {}
+            
+            for pattern in similar_patterns:
+                try:
+                    similarity = self._calculate_similarity(validated_characteristics, pattern.input_characteristics)
+                    
+                    # Enhanced weighting with confidence tracking
+                    base_weight = similarity * pattern.success_rate * min(1.0, pattern.usage_count / 100)
+                    confidence_factor = self._calculate_pattern_confidence(pattern)
+                    weight = base_weight * confidence_factor
+                    
+                    for pass_name in pattern.optimization_sequence:
+                        if self._is_valid_pass_name(pass_name):  # Security check
+                            sequence_scores[pass_name] = sequence_scores.get(pass_name, 0) + weight
+                            confidence_scores[pass_name] = confidence_scores.get(pass_name, 0) + confidence_factor
+                        
+                except Exception as e:
+                    logger.warning(f"Error processing pattern {pattern.pattern_id}: {e}")
+                    continue
+            
+            # Enhanced sequence generation with confidence filtering
+            if not sequence_scores:
+                logger.warning("No valid patterns processed - using fallback sequence")
+                return self._enhanced_default_optimization_sequence(validated_characteristics)
+            
+            # Filter low-confidence predictions
+            min_confidence = 0.3
+            filtered_passes = {name: score for name, score in sequence_scores.items() 
+                             if confidence_scores.get(name, 0) >= min_confidence}
+            
+            if not filtered_passes:
+                logger.info("All predictions below confidence threshold - using hybrid approach")
+                return self._hybrid_sequence_generation(validated_characteristics, sequence_scores)
+            
+            # Sort by score and create sequence
+            sorted_passes = sorted(filtered_passes.items(), key=lambda x: x[1], reverse=True)
+            predicted_sequence = [pass_name for pass_name, score in sorted_passes[:8]]  # Top 8 passes
+            
+            logger.info(f"Predicted optimization sequence with {len(predicted_sequence)} passes")
+            return predicted_sequence
+            
+        except Exception as e:
+            logger.error(f"Prediction failed with error: {e}")
+            # Fallback to safe default sequence
+            return self._get_safe_default_sequence()
 
     def adaptive_multi_objective_optimization(self,
                                             circuit_repr: Dict[str, Any],
@@ -501,6 +553,174 @@ class PhotonicCircuitLearner:
             
         except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
             logger.warning(f"Failed to load patterns from {filepath}: {e}")
+    
+    # GENERATION 2: ROBUST HELPER METHODS FOR SECURITY AND RELIABILITY
+    
+    def _validate_and_sanitize_characteristics(self, characteristics: Dict[str, float]) -> Dict[str, float]:
+        """Validate and sanitize circuit characteristics input."""
+        if not isinstance(characteristics, dict):
+            raise ValueError("Characteristics must be a dictionary")
+        
+        validated = {}
+        valid_keys = {
+            'node_count', 'connectivity_ratio', 'wavelength_diversity', 'spectral_bandwidth',
+            'power_density', 'topology_complexity', 'hierarchy_depth', 'parallelism_factor'
+        }
+        
+        for key, value in characteristics.items():
+            # Security: Only allow safe keys to prevent injection
+            safe_key = ''.join(c for c in str(key) if c.isalnum() or c == '_')[:50]
+            if safe_key not in valid_keys:
+                logger.warning(f"Invalid characteristic key ignored: {key}")
+                continue
+                
+            # Sanitize values
+            try:
+                sanitized_value = float(value)
+                if not (-1e6 <= sanitized_value <= 1e6):  # Reasonable bounds
+                    logger.warning(f"Value out of bounds for {safe_key}: {value}")
+                    sanitized_value = max(-1e6, min(1e6, sanitized_value))
+                validated[safe_key] = sanitized_value
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid value type for {safe_key}: {value}")
+                validated[safe_key] = 0.0  # Safe default
+        
+        return validated
+    
+    def _validate_and_sanitize_objectives(self, objectives: Dict[str, float]) -> Dict[str, float]:
+        """Validate and sanitize optimization objectives."""
+        if not isinstance(objectives, dict):
+            raise ValueError("Objectives must be a dictionary")
+            
+        validated = {}
+        valid_objectives = {
+            'power_efficiency', 'performance', 'area_efficiency', 'thermal_stability',
+            'latency', 'accuracy', 'throughput', 'reliability'
+        }
+        
+        for key, value in objectives.items():
+            safe_key = ''.join(c for c in str(key) if c.isalnum() or c == '_')[:50]
+            if safe_key not in valid_objectives:
+                logger.warning(f"Invalid objective ignored: {key}")
+                continue
+                
+            try:
+                sanitized_value = float(value)
+                if not (0.0 <= sanitized_value <= 1.0):  # Objectives should be normalized
+                    logger.warning(f"Objective value out of [0,1] range for {safe_key}: {value}")
+                    sanitized_value = max(0.0, min(1.0, sanitized_value))
+                validated[safe_key] = sanitized_value
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid objective value for {safe_key}: {value}")
+                validated[safe_key] = 0.5  # Neutral default
+        
+        return validated
+    
+    def _detect_malicious_patterns(self, characteristics: Dict[str, float], objectives: Dict[str, float]) -> bool:
+        """Detect potentially malicious input patterns."""
+        # Check for suspicious patterns that could indicate injection attempts
+        
+        # 1. Check for extreme values that might cause overflow
+        for value in list(characteristics.values()) + list(objectives.values()):
+            if abs(value) > 1e10:
+                return True
+        
+        # 2. Check for NaN or infinity values
+        for value in list(characteristics.values()) + list(objectives.values()):
+            if not isinstance(value, (int, float)) or str(value).lower() in ['nan', 'inf', '-inf']:
+                return True
+        
+        # 3. Check for suspicious patterns in keys (already sanitized but double-check)
+        all_keys = list(characteristics.keys()) + list(objectives.keys())
+        for key in all_keys:
+            if len(key) > 100 or any(char in key for char in ['<', '>', ';', '&', '|']):
+                return True
+        
+        return False
+    
+    def _get_safe_default_sequence(self) -> List[str]:
+        """Get a safe default optimization sequence."""
+        return [
+            "basic_validation",
+            "power_gating", 
+            "thermal_optimization",
+            "noise_reduction"
+        ]
+    
+    def _enhanced_default_optimization_sequence(self, characteristics: Dict[str, float]) -> List[str]:
+        """Enhanced default sequence based on circuit characteristics."""
+        base_sequence = self._default_optimization_sequence()
+        
+        # Adapt sequence based on characteristics
+        if characteristics.get('topology_complexity', 0.5) > 0.7:
+            base_sequence.insert(0, "topology_analysis")
+        
+        if characteristics.get('wavelength_diversity', 1) > 4:
+            base_sequence.insert(-1, "wavelength_crosstalk_mitigation")
+            
+        if characteristics.get('power_density', 0.5) > 0.8:
+            base_sequence.insert(1, "advanced_thermal_management")
+        
+        return base_sequence
+    
+    def _is_valid_pass_name(self, pass_name: str) -> bool:
+        """Security check for optimization pass names."""
+        if not isinstance(pass_name, str) or len(pass_name) > 100:
+            return False
+        
+        # Only allow alphanumeric characters and underscores
+        if not all(c.isalnum() or c == '_' for c in pass_name):
+            return False
+        
+        # Check against whitelist of known optimization passes
+        valid_passes = {
+            "wavelength_allocation", "thermal_optimization", "power_gating",
+            "phase_quantization", "noise_reduction", "layout_optimization",
+            "coherent_optimization", "nonlinear_compensation", "dispersion_management",
+            "topology_analysis", "wavelength_crosstalk_mitigation", "advanced_thermal_management",
+            "basic_validation", "performance_profiling", "error_correction"
+        }
+        
+        return pass_name in valid_passes
+    
+    def _calculate_pattern_confidence(self, pattern: CompilationPattern) -> float:
+        """Calculate confidence in a learned pattern."""
+        # Base confidence from usage count
+        usage_confidence = min(1.0, pattern.usage_count / 50.0)
+        
+        # Success rate confidence
+        success_confidence = pattern.success_rate
+        
+        # Age confidence (newer patterns might be more relevant)
+        try:
+            from datetime import datetime, timedelta
+            last_updated = datetime.fromisoformat(pattern.last_updated)
+            days_old = (datetime.now() - last_updated).days
+            age_confidence = max(0.1, 1.0 - (days_old / 365.0))  # Decay over a year
+        except (ValueError, AttributeError):
+            age_confidence = 0.5  # Default for invalid dates
+        
+        # Combine confidences
+        return (usage_confidence * 0.3 + success_confidence * 0.5 + age_confidence * 0.2)
+    
+    def _hybrid_sequence_generation(self, characteristics: Dict[str, float], 
+                                   low_confidence_scores: Dict[str, float]) -> List[str]:
+        """Generate hybrid sequence combining heuristics and low-confidence ML predictions."""
+        # Start with enhanced default
+        base_sequence = self._enhanced_default_optimization_sequence(characteristics)
+        
+        # Add top ML suggestions that passed basic validation
+        if low_confidence_scores:
+            sorted_ml = sorted(low_confidence_scores.items(), key=lambda x: x[1], reverse=True)
+            top_ml_passes = [pass_name for pass_name, _ in sorted_ml[:3]]
+            
+            # Insert ML suggestions into strategic positions
+            for i, ml_pass in enumerate(top_ml_passes):
+                if ml_pass not in base_sequence:
+                    insert_pos = min(len(base_sequence), 2 + i)
+                    base_sequence.insert(insert_pos, ml_pass)
+        
+        return base_sequence[:8]  # Limit total length
 
 class AdaptiveMLOptimizer:
     """

@@ -473,3 +473,163 @@ def get_security_config() -> SecurityConfig:
 def create_secure_compilation_environment() -> SecureCompilationEnvironment:
     """Create a secure compilation environment"""
     return SecureCompilationEnvironment(_global_security_config)
+
+
+class SecurityValidator:
+    """
+    GENERATION 2: Comprehensive security validator for all inputs
+    Provides unified interface for security validation across the system
+    """
+    
+    def __init__(self, config: SecurityConfig = None):
+        self.config = config or SecurityConfig()
+        self.logger = get_logger("photonic_mlir.security.validator")
+        self.audit_logger = get_audit_logger()
+        
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """
+        Validate any input data for security threats
+        Returns True if input is safe, False if potentially malicious
+        """
+        try:
+            # Basic type validation
+            if not isinstance(input_data, dict):
+                self.audit_logger.log_security_event(
+                    "invalid_input_type",
+                    {"expected": "dict", "received": type(input_data).__name__},
+                    severity="WARNING"
+                )
+                return False
+            
+            # Check for injection patterns
+            if self._detect_injection_patterns(input_data):
+                self.audit_logger.log_security_event(
+                    "injection_attempt_detected",
+                    {"input_keys": list(input_data.keys())},
+                    severity="CRITICAL"
+                )
+                return False
+            
+            # Check for resource exhaustion attempts
+            if self._detect_resource_exhaustion(input_data):
+                self.audit_logger.log_security_event(
+                    "resource_exhaustion_attempt",
+                    {"data_size": len(str(input_data))},
+                    severity="WARNING"
+                )
+                return False
+            
+            # Check for path traversal attempts
+            if self._detect_path_traversal(input_data):
+                self.audit_logger.log_security_event(
+                    "path_traversal_attempt",
+                    {"suspicious_paths": self._extract_suspicious_paths(input_data)},
+                    severity="WARNING"
+                )
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Security validation error: {e}")
+            # Fail secure - reject input on validation error
+            return False
+    
+    def _detect_injection_patterns(self, data: Dict[str, Any]) -> bool:
+        """Detect various injection attack patterns"""
+        injection_patterns = [
+            # SQL injection
+            "'; DROP", "UNION SELECT", "DELETE FROM", "INSERT INTO", "UPDATE SET",
+            # Command injection  
+            "$(", "`", "; rm ", "; cat ", "| bash", "&& rm",
+            # Code injection
+            "__import__", "eval(", "exec(", "compile(", "globals()", "locals()",
+            # Script injection
+            "<script", "javascript:", "vbscript:", "onload=", "onerror=",
+            # Path manipulation
+            "../", "..\\", "/etc/passwd", "/root/", "C:\\Windows",
+        ]
+        
+        def check_value(value) -> bool:
+            if isinstance(value, str):
+                value_lower = value.lower()
+                return any(pattern.lower() in value_lower for pattern in injection_patterns)
+            elif isinstance(value, dict):
+                return any(check_value(v) for v in value.values()) or any(check_value(k) for k in value.keys())
+            elif isinstance(value, (list, tuple)):
+                return any(check_value(item) for item in value)
+            return False
+        
+        return check_value(data)
+    
+    def _detect_resource_exhaustion(self, data: Dict[str, Any]) -> bool:
+        """Detect potential resource exhaustion attacks"""
+        # Check data size
+        data_str = str(data)
+        if len(data_str) > 100_000:  # 100KB limit
+            return True
+        
+        # Check nesting depth
+        if self._get_nesting_depth(data) > 10:
+            return True
+        
+        # Check for large arrays/lists
+        def check_large_containers(obj):
+            if isinstance(obj, (list, tuple)) and len(obj) > 1000:
+                return True
+            elif isinstance(obj, dict):
+                if len(obj) > 100:
+                    return True
+                return any(check_large_containers(v) for v in obj.values())
+            return False
+        
+        return check_large_containers(data)
+    
+    def _detect_path_traversal(self, data: Dict[str, Any]) -> bool:
+        """Detect path traversal attempts"""
+        path_traversal_patterns = ["../", "..\\", "/etc/", "/root/", "C:\\", "\\\\"]
+        
+        def check_paths(obj):
+            if isinstance(obj, str):
+                return any(pattern in obj for pattern in path_traversal_patterns)
+            elif isinstance(obj, dict):
+                return any(check_paths(v) for v in obj.values()) or any(check_paths(k) for k in obj.keys())
+            elif isinstance(obj, (list, tuple)):
+                return any(check_paths(item) for item in obj)
+            return False
+        
+        return check_paths(data)
+    
+    def _get_nesting_depth(self, obj, current_depth=0) -> int:
+        """Calculate nesting depth of data structure"""
+        if current_depth > 20:  # Prevent infinite recursion
+            return current_depth
+        
+        if isinstance(obj, dict):
+            if not obj:
+                return current_depth
+            return max(self._get_nesting_depth(v, current_depth + 1) for v in obj.values())
+        elif isinstance(obj, (list, tuple)):
+            if not obj:
+                return current_depth
+            return max(self._get_nesting_depth(item, current_depth + 1) for item in obj)
+        else:
+            return current_depth
+    
+    def _extract_suspicious_paths(self, data: Dict[str, Any]) -> List[str]:
+        """Extract suspicious file paths from input data"""
+        suspicious_paths = []
+        
+        def extract_paths(obj):
+            if isinstance(obj, str):
+                if any(pattern in obj for pattern in ["../", "..\\", "/etc/", "/root/", "C:\\"]):
+                    suspicious_paths.append(obj[:100])  # Limit length for logging
+            elif isinstance(obj, dict):
+                for v in obj.values():
+                    extract_paths(v)
+            elif isinstance(obj, (list, tuple)):
+                for item in obj:
+                    extract_paths(item)
+        
+        extract_paths(data)
+        return suspicious_paths[:10]  # Limit number of paths logged
