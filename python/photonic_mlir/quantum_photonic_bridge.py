@@ -48,7 +48,8 @@ class QuantumState:
     num_qubits: int
     encoding: PhotonicQuantumEncoding
     coherence_time: float  # μs
-    fidelity: float       # State preparation fidelity
+    fidelity: float = 0.99  # Quantum state fidelity
+    entanglement_measure: float = 0.0  # Von Neumann entropy measure
 
 @dataclass
 class PhotonicQuantumGate:
