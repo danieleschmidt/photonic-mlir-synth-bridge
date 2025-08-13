@@ -10,6 +10,11 @@ from .optimization import OptimizationPipeline, PhotonicPasses
 from .simulation import PhotonicSimulator, HardwareInterface
 from .benchmarking import BenchmarkSuite, ModelBenchmark
 from .research import ResearchSuite, PhotonicVsElectronicComparison
+from .breakthrough_research import (
+    PhotonicNeuralArchitectureSearch, QuantumEnhancedPhotonicLearning,
+    create_breakthrough_research_suite, run_comparative_photonic_study
+)
+from .adaptive_ml import MultiModalPhotonicElectronicFusion, create_multimodal_fusion_system
 from .cache import get_cache_manager, cached_compilation, cached_simulation
 from .load_balancer import LoadBalancer, DistributedCompiler, create_local_cluster
 from .monitoring import get_metrics_collector, get_health_checker, performance_monitor
@@ -36,6 +41,12 @@ __all__ = [
     "ModelBenchmark",
     "ResearchSuite", 
     "PhotonicVsElectronicComparison",
+    "PhotonicNeuralArchitectureSearch",
+    "QuantumEnhancedPhotonicLearning", 
+    "create_breakthrough_research_suite",
+    "run_comparative_photonic_study",
+    "MultiModalPhotonicElectronicFusion",
+    "create_multimodal_fusion_system",
     "get_cache_manager",
     "cached_compilation",
     "cached_simulation",
