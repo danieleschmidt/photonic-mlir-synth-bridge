@@ -1,0 +1,198 @@
+{
+  "test_results": [
+    {
+      "tensor_operations": {
+        "algorithm_name": "Photonic_Tensor_Core",
+        "execution_time": 0.00040535400000862865,
+        "accuracy_score": 0.990304488520532,
+        "throughput": 631546.7467807166,
+        "efficiency_score": 2.6,
+        "scalability_factor": 16,
+        "resource_utilization": 1.0
+      },
+      "coherent_processing": {
+        "algorithm_name": "Coherent_Optical_Processor",
+        "execution_time": 0.001179724999985865,
+        "accuracy_score": 0.95,
+        "throughput": 21191.379347135597,
+        "efficiency_score": 1.032,
+        "scalability_factor": 1.032,
+        "resource_utilization": 0.95
+      },
+      "wavelength_management": {
+        "algorithm_name": "Adaptive_Wavelength_Multiplexer",
+        "execution_time": 0.0002122320000239597,
+        "accuracy_score": 0.98,
+        "throughput": 4711.8247949748675,
+        "efficiency_score": 1.3694213298426707,
+        "scalability_factor": 0.8847490091284371,
+        "resource_utilization": 0.36942132984267073
+      }
+    },
+    {
+      "tensor_operations": {
+        "algorithm_name": "Photonic_Tensor_Core",
+        "execution_time": 0.00021078599996826597,
+        "accuracy_score": 0.99031711543467,
+        "throughput": 4858007.648298104,
+        "efficiency_score": 2.6,
+        "scalability_factor": 16,
+        "resource_utilization": 1.0
+      },
+      "coherent_processing": {
+        "algorithm_name": "Coherent_Optical_Processor",
+        "execution_time": 0.002273683999987952,
+        "accuracy_score": 0.95,
+        "throughput": 35625.003298800184,
+        "efficiency_score": 1.1280000000000001,
+        "scalability_factor": 1.1280000000000001,
+        "resource_utilization": 0.95
+      },
+      "wavelength_management": {
+        "algorithm_name": "Adaptive_Wavelength_Multiplexer",
+        "execution_time": 9.619200000088313e-05,
+        "accuracy_score": 0.98,
+        "throughput": 10395.874916737557,
+        "efficiency_score": 1.5447651123780501,
+        "scalability_factor": 0.9273886290098655,
+        "resource_utilization": 0.5447651123780501
+      }
+    },
+    {
+      "tensor_operations": {
+        "algorithm_name": "Photonic_Tensor_Core",
+        "execution_time": 0.00041239699999096047,
+        "accuracy_score": 0.9903114227542634,
+        "throughput": 9932177.00441512,
+        "efficiency_score": 2.6,
+        "scalability_factor": 16,
+        "resource_utilization": 1.0
+      },
+      "coherent_processing": {
+        "algorithm_name": "Coherent_Optical_Processor",
+        "execution_time": 0.007083107999960703,
+        "accuracy_score": 0.95,
+        "throughput": 88238.10112784777,
+        "efficiency_score": 1.256,
+        "scalability_factor": 1.256,
+        "resource_utilization": 0.95
+      },
+      "wavelength_management": {
+        "algorithm_name": "Adaptive_Wavelength_Multiplexer",
+        "execution_time": 0.00010625300001265714,
+        "accuracy_score": 0.98,
+        "throughput": 9411.49896831974,
+        "efficiency_score": 1.65,
+        "scalability_factor": 0.9038163692632153,
+        "resource_utilization": 0.6499999999999999
+      }
+    },
+    {
+      "tensor_operations": {
+        "algorithm_name": "Photonic_Tensor_Core",
+        "execution_time": 0.002158715000007305,
+        "accuracy_score": 0.9903173760482986,
+        "throughput": 7589700.354120186,
+        "efficiency_score": 2.6,
+        "scalability_factor": 16,
+        "resource_utilization": 1.0
+      },
+      "coherent_processing": {
+        "algorithm_name": "Coherent_Optical_Processor",
+        "execution_time": 0.030523651000009977,
+        "accuracy_score": 0.95,
+        "throughput": 106442.0504610978,
+        "efficiency_score": 1.512,
+        "scalability_factor": 1.512,
+        "resource_utilization": 0.95
+      },
+      "wavelength_management": {
+        "algorithm_name": "Adaptive_Wavelength_Multiplexer",
+        "execution_time": 0.00011272400001871574,
+        "accuracy_score": 0.98,
+        "throughput": 8871.225292164654,
+        "efficiency_score": 1.5720688970114476,
+        "scalability_factor": 0.9032918392884921,
+        "resource_utilization": 0.5720688970114476
+      }
+    }
+  ],
+  "statistical_analysis": {
+    "coherent_processing": {
+      "sample_size": 4,
+      "execution_time": {
+        "mean": 0.010265041999986124,
+        "std": 0.013747008526354545,
+        "min": 0.001179724999985865,
+        "max": 0.030523651000009977
+      },
+      "efficiency_score": {
+        "mean": 1.232,
+        "std": 0.208,
+        "min": 1.032,
+        "max": 1.512
+      },
+      "accuracy_score": {
+        "mean": 0.95,
+        "std": 0.0,
+        "min": 0.95,
+        "max": 0.95
+      },
+      "statistical_significance": {
+        "efficiency_significant": "True",
+        "consistency_score": 0.8311688311688312
+      }
+    },
+    "wavelength_management": {
+      "sample_size": 4,
+      "execution_time": {
+        "mean": 0.00013185025001405393,
+        "std": 5.4017803161473114e-05,
+        "min": 9.619200000088313e-05,
+        "max": 0.0002122320000239597
+      },
+      "efficiency_score": {
+        "mean": 1.534063834808042,
+        "std": 0.1184725719810347,
+        "min": 1.3694213298426707,
+        "max": 1.65
+      },
+      "accuracy_score": {
+        "mean": 0.98,
+        "std": 0.0,
+        "min": 0.98,
+        "max": 0.98
+      },
+      "statistical_significance": {
+        "efficiency_significant": true,
+        "consistency_score": 0.9227720716094847
+      }
+    },
+    "tensor_operations": {
+      "sample_size": 4,
+      "execution_time": {
+        "mean": 0.0007968129999937901,
+        "std": 0.0009127286037165861,
+        "min": 0.00021078599996826597,
+        "max": 0.002158715000007305
+      },
+      "efficiency_score": {
+        "mean": 2.6,
+        "std": 0.0,
+        "min": 2.6,
+        "max": 2.6
+      },
+      "accuracy_score": {
+        "mean": 0.990312600689441,
+        "std": 6.065800095428274e-06,
+        "min": 0.990304488520532,
+        "max": 0.9903173760482986
+      },
+      "statistical_significance": {
+        "efficiency_significant": "True",
+        "consistency_score": 1.0
+      }
+    }
+  },
+  "timestamp": "2025-08-13 17:43:25 UTC"
+}
