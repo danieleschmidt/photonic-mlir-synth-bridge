@@ -18,6 +18,14 @@ from .adaptive_ml import MultiModalPhotonicElectronicFusion, create_multimodal_f
 from .cache import get_cache_manager, cached_compilation, cached_simulation
 from .load_balancer import LoadBalancer, DistributedCompiler, create_local_cluster
 from .monitoring import get_metrics_collector, get_health_checker, performance_monitor
+from .quantum_enhanced_compiler import (
+    QuantumEnhancedPhotonicCompiler, QuantumPhotonicFusionMode,
+    create_quantum_enhanced_research_suite, run_breakthrough_quantum_study
+)
+from .adaptive_realtime_compiler import (
+    RealTimeAdaptiveCompiler, AdaptiveMode, CompilationRequest, CompilationPriority,
+    create_real_time_adaptive_compiler, start_adaptive_compilation_service
+)
 
 try:
     from .pytorch_frontend import PhotonicLayer, PhotonicMLP, PhotonicConv2d
@@ -59,4 +67,16 @@ __all__ = [
     "PhotonicLayer",
     "PhotonicMLP",
     "PhotonicConv2d",
+    # Breakthrough Quantum-Enhanced Capabilities
+    "QuantumEnhancedPhotonicCompiler",
+    "QuantumPhotonicFusionMode",
+    "create_quantum_enhanced_research_suite",
+    "run_breakthrough_quantum_study",
+    # Next-Generation Adaptive Compilation
+    "RealTimeAdaptiveCompiler",
+    "AdaptiveMode",
+    "CompilationRequest", 
+    "CompilationPriority",
+    "create_real_time_adaptive_compiler",
+    "start_adaptive_compilation_service",
 ]
