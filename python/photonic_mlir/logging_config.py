@@ -138,6 +138,15 @@ def configure_logging(level: str = "INFO",
     _global_logger.configure(level, log_file, enable_console, enable_structured)
 
 
+def configure_structured_logging(name: str = None) -> logging.Logger:
+    """Configure structured logging and return logger instance"""
+    if name is None:
+        name = "photonic_mlir"
+    logger_instance = PhotonicMLIRLogger(name)
+    logger_instance.configure(enable_structured=True)
+    return logger_instance.get_logger()
+
+
 class CompilationLogger:
     """Specialized logger for compilation process"""
     

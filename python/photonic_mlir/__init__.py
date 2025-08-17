@@ -26,6 +26,22 @@ from .adaptive_realtime_compiler import (
     RealTimeAdaptiveCompiler, AdaptiveMode, CompilationRequest, CompilationPriority,
     create_real_time_adaptive_compiler, start_adaptive_compilation_service
 )
+from .breakthrough_evolution import (
+    BreakthroughEvolutionEngine, EvolutionStrategy, run_breakthrough_evolution,
+    create_autonomous_evolution_system
+)
+from .quantum_photonic_fusion import (
+    QuantumPhotonicFusionEngine, QuantumPhotonicMode, PhotonicQuantumGate,
+    create_quantum_photonic_fusion_system, run_quantum_photonic_breakthrough_experiment
+)
+from .neural_photonic_synthesis import (
+    NeuralPhotonicSynthesisEngine, SynthesisMode, PhotonicCircuitDesign,
+    create_neural_photonic_synthesis_system, run_autonomous_photonic_synthesis
+)
+from .autonomous_scaling_optimizer import (
+    AutonomousScalingOptimizer, ScalingStrategy, ResourceMetrics,
+    create_autonomous_scaling_system, run_scaling_optimization_demo
+)
 
 try:
     from .pytorch_frontend import PhotonicLayer, PhotonicMLP, PhotonicConv2d
@@ -79,4 +95,24 @@ __all__ = [
     "CompilationPriority",
     "create_real_time_adaptive_compiler",
     "start_adaptive_compilation_service",
+    # Breakthrough Evolution & Autonomous Systems
+    "BreakthroughEvolutionEngine",
+    "EvolutionStrategy",
+    "run_breakthrough_evolution",
+    "create_autonomous_evolution_system",
+    "QuantumPhotonicFusionEngine",
+    "QuantumPhotonicMode",
+    "PhotonicQuantumGate",
+    "create_quantum_photonic_fusion_system",
+    "run_quantum_photonic_breakthrough_experiment",
+    "NeuralPhotonicSynthesisEngine",
+    "SynthesisMode",
+    "PhotonicCircuitDesign",
+    "create_neural_photonic_synthesis_system",
+    "run_autonomous_photonic_synthesis",
+    "AutonomousScalingOptimizer",
+    "ScalingStrategy",
+    "ResourceMetrics",
+    "create_autonomous_scaling_system",
+    "run_scaling_optimization_demo",
 ]
