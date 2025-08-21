@@ -42,6 +42,22 @@ from .autonomous_scaling_optimizer import (
     AutonomousScalingOptimizer, ScalingStrategy, ResourceMetrics,
     create_autonomous_scaling_system, run_scaling_optimization_demo
 )
+from .neuromorphic_photonic import (
+    NeuromorphicPhotonicProcessor, SynapticPlasticityType, PhotonicNeuronType,
+    create_neuromorphic_photonic_system, run_neuromorphic_demo
+)
+from .self_evolving_nas import (
+    SelfEvolvingPhotonicNAS, PhotonicPrimitive, SearchStrategy, OptimizationObjective,
+    create_self_evolving_nas_system, run_nas_demo
+)
+from .holographic_computing import (
+    HolographicProcessor, HologramType, PhotorefractiveType, ProcessingMode,
+    create_holographic_computing_system, run_holographic_demo
+)
+from .continuous_variable_quantum import (
+    CVQuantumCircuit, CVQuantumNeuralNetwork, CVQuantumOptimizer, CVQuantumState,
+    create_cv_quantum_system, run_cv_quantum_demo
+)
 
 try:
     from .pytorch_frontend import PhotonicLayer, PhotonicMLP, PhotonicConv2d
@@ -115,4 +131,28 @@ __all__ = [
     "ResourceMetrics",
     "create_autonomous_scaling_system",
     "run_scaling_optimization_demo",
+    # Generation 4+ Breakthrough Capabilities
+    "NeuromorphicPhotonicProcessor",
+    "SynapticPlasticityType",
+    "PhotonicNeuronType", 
+    "create_neuromorphic_photonic_system",
+    "run_neuromorphic_demo",
+    "SelfEvolvingPhotonicNAS",
+    "PhotonicPrimitive",
+    "SearchStrategy",
+    "OptimizationObjective",
+    "create_self_evolving_nas_system",
+    "run_nas_demo",
+    "HolographicProcessor",
+    "HologramType",
+    "PhotorefractiveType",
+    "ProcessingMode",
+    "create_holographic_computing_system",
+    "run_holographic_demo",
+    "CVQuantumCircuit",
+    "CVQuantumNeuralNetwork",
+    "CVQuantumOptimizer",
+    "CVQuantumState",
+    "create_cv_quantum_system",
+    "run_cv_quantum_demo",
 ]
