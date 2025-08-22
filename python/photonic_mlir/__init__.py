@@ -59,6 +59,24 @@ from .continuous_variable_quantum import (
     create_cv_quantum_system, run_cv_quantum_demo
 )
 
+# Generation 4+ Breakthrough Enhancements
+from .breakthrough_quantum_coherence import (
+    CoherentMatrixMultiplier, QuantumCoherenceResearchSuite, CoherenceMode,
+    create_breakthrough_coherence_system, run_quantum_coherence_demo
+)
+from .breakthrough_photonic_nas import (
+    SelfEvolvingPhotonicNAS, PhotonicLayerType, EvolutionStrategy, PhotonicArchitectureGenome,
+    create_self_evolving_photonic_nas, run_breakthrough_nas_experiment
+)
+from .breakthrough_holographic_fusion import (
+    HolographicProcessor, HolographicFusionEngine, HologramType, PhotorefractiveType,
+    create_holographic_computing_system, run_holographic_fusion_demo
+)
+from .breakthrough_cv_quantum import (
+    CVQuantumState, CVQuantumCircuit, CVQuantumNeuralNetwork, CVQuantumOptimizer,
+    CVQuantumGate, CVQuantumMode, create_cv_quantum_system, run_cv_quantum_breakthrough_demo
+)
+
 try:
     from .pytorch_frontend import PhotonicLayer, PhotonicMLP, PhotonicConv2d
 except ImportError:
@@ -155,4 +173,20 @@ __all__ = [
     "CVQuantumState",
     "create_cv_quantum_system",
     "run_cv_quantum_demo",
+    # Generation 4+ Breakthrough Enhancements
+    "CoherentMatrixMultiplier",
+    "QuantumCoherenceResearchSuite", 
+    "CoherenceMode",
+    "create_breakthrough_coherence_system",
+    "run_quantum_coherence_demo",
+    "PhotonicLayerType",
+    "EvolutionStrategy",
+    "PhotonicArchitectureGenome",
+    "create_self_evolving_photonic_nas",
+    "run_breakthrough_nas_experiment",
+    "HolographicFusionEngine",
+    "run_holographic_fusion_demo",
+    "CVQuantumGate",
+    "CVQuantumMode",
+    "run_cv_quantum_breakthrough_demo",
 ]
