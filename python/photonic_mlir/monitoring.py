@@ -4,7 +4,13 @@ Advanced monitoring and observability for Photonic MLIR operations.
 
 import time
 import threading
-import psutil
+
+# Robust dependency loading with fallbacks
+try:
+    import psutil
+except ImportError:
+    from .fallback_deps import get_fallback_dep
+    psutil = get_fallback_dep('psutil')
 import json
 from typing import Dict, List, Any, Optional, Callable
 from pathlib import Path
