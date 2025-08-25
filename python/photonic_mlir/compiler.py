@@ -34,6 +34,8 @@ class PhotonicBackend(Enum):
     ANALOG_PHOTONICS = "analog_photonics"
     AIM_PHOTONICS = "aim_photonics"
     SIMULATION_ONLY = "simulation"
+    SIM_ONLY = "sim_only"  # Alias for compatibility
+    HARDWARE = "hardware"  # Generic hardware backend
 
 
 class PhotonicCircuit:
@@ -119,15 +121,56 @@ void photonic_accelerator(
         # Mock implementation - in reality would generate actual GDS
         with open(path, 'wb') as f:
             f.write(b"GDS_MOCK_LAYOUT_DATA")
+    
+    def _get_target_optimizations(self, target: str) -> List[str]:
+        """Get target-specific optimizations"""
+        optimizations = ["power_gating", "thermal_management"]
+        
+        if target == "AIM_Photonics_PDK":
+            optimizations.extend(["silicon_photonics_optimization", "mzi_optimization"])
+        elif target == "IMEC_SiPhotonics":
+            optimizations.extend(["cmos_compatibility", "wafer_scale_optimization"])
+        elif target == "GlobalFoundries":
+            optimizations.extend(["foundry_rules", "yield_optimization"])
+        
+        return optimizations
+    
+    def _calculate_power_constraints(self, process_node: str) -> str:
+        """Calculate power constraints for process node"""
+        constraints = {
+            "45nm": "Max 100mW, Thermal limit 85°C",
+            "65nm": "Max 150mW, Thermal limit 90°C", 
+            "90nm": "Max 200mW, Thermal limit 95°C",
+            "130nm": "Max 300mW, Thermal limit 100°C",
+            "45nm_SOI": "Max 80mW, Thermal limit 80°C"
+        }
+        
+        return constraints.get(process_node, "Standard constraints")
 
 
 class PhotonicCompiler:
-    """Main compiler for converting PyTorch models to photonic circuits"""
+    """Main compiler for converting PyTorch models to photonic circuits with enhanced resilience"""
     
     def __init__(self, 
                  backend: PhotonicBackend = PhotonicBackend.SIMULATION_ONLY,
                  wavelengths: List[float] = None,
                  power_budget: float = 100.0):
+        
+        # Enhanced input validation
+        if isinstance(backend, str):
+            # Handle string backend input
+            try:
+                backend_map = {
+                    'lightmatter': PhotonicBackend.LIGHTMATTER,
+                    'analog_photonics': PhotonicBackend.ANALOG_PHOTONICS,
+                    'aim_photonics': PhotonicBackend.AIM_PHOTONICS,
+                    'simulation': PhotonicBackend.SIMULATION_ONLY,
+                    'sim_only': PhotonicBackend.SIMULATION_ONLY
+                }
+                backend = backend_map.get(backend.lower(), PhotonicBackend.SIMULATION_ONLY)
+            except Exception:
+                backend = PhotonicBackend.SIMULATION_ONLY
+        
         self.backend = backend
         self.wavelengths = wavelengths or [1550.0]  # Default C-band wavelength
         self.power_budget = power_budget
@@ -135,6 +178,15 @@ class PhotonicCompiler:
         # Set up logging
         from .logging_config import get_logger
         self.logger = get_logger("photonic_mlir.compiler")
+        
+        # Initialize validator (with fallback)
+        try:
+            from .enhanced_validation import get_validator
+            self.validator = get_validator()
+        except ImportError:
+            self.validator = None
+        
+        self.logger.info(f"PhotonicCompiler initialized - Backend: {self.backend.value}, Wavelengths: {len(self.wavelengths)}, Power: {self.power_budget}mW")
         
     def compile(self, 
                 model: Any,
@@ -303,3 +355,86 @@ module {{
                                         "activation = \"photodetector\", power_gated = true")
         
         return optimized
+    
+    def validate_input(self, input_data):
+        """Enhanced input validation with comprehensive checks"""
+        if input_data is None:
+            self.logger.warning("Input data is None")
+            return {'valid': False, 'reason': 'Input data cannot be None'}
+        
+        try:
+            # Basic type validation
+            if not hasattr(input_data, '__len__') and not hasattr(input_data, 'shape'):
+                return {'valid': False, 'reason': 'Input must be array-like or have shape attribute'}
+            
+            # Check for reasonable size limits
+            if hasattr(input_data, '__len__'):
+                if len(input_data) == 0:
+                    return {'valid': False, 'reason': 'Input data cannot be empty'}
+                if len(input_data) > 10000:
+                    self.logger.warning(f"Large input size: {len(input_data)} elements")
+            
+            # Security validation if validator is available
+            if self.validator and isinstance(input_data, str):
+                security_result = self.validator.validate_field('input_data', input_data)
+                if not security_result['valid']:
+                    return {
+                        'valid': False,
+                        'reason': f"Security validation failed: {security_result['errors']}"
+                    }
+            
+            self.logger.debug(f"Input validation passed for {type(input_data).__name__}")
+            return {'valid': True, 'reason': 'Input validation successful'}
+            
+        except Exception as e:
+            self.logger.error(f"Input validation error: {e}")
+            return {'valid': False, 'reason': f'Validation error: {e}'}
+    
+    def _validate_model_compatibility(self, model):
+        """Validate model compatibility with photonic compilation"""
+        if model is None:
+            raise ValueError("Model cannot be None")
+        
+        # Check if model is callable
+        if not hasattr(model, '__call__'):
+            raise ValueError("Model must be callable")
+        
+        # Additional validations can be added here
+        self.logger.debug("Model compatibility validation passed")
+    
+    def _estimate_circuit_complexity(self, model, optimization_level: int) -> int:
+        """Estimate the number of photonic circuit nodes needed"""
+        base_nodes = 10  # Minimum nodes
+        
+        # Estimate based on model parameters if available
+        if hasattr(model, 'parameters') and TORCH_AVAILABLE:
+            try:
+                param_count = sum(p.numel() for p in model.parameters())
+                # Rough estimate: 1 node per 1000 parameters
+                estimated_nodes = max(base_nodes, param_count // 1000)
+            except:
+                estimated_nodes = base_nodes * 4  # Conservative fallback
+        else:
+            # Fallback estimation
+            estimated_nodes = base_nodes * 3
+        
+        # Adjust for optimization level
+        optimization_factor = 1.0 - (optimization_level * 0.1)  # Higher optimization = fewer nodes
+        final_nodes = max(base_nodes, int(estimated_nodes * optimization_factor))
+        
+        self.logger.debug(f"Estimated circuit nodes: {final_nodes}")
+        return final_nodes
+    
+    def _estimate_power_consumption(self, circuit_nodes: int) -> float:
+        """Estimate power consumption based on circuit complexity"""
+        # Base power consumption model
+        base_power = 5.0  # mW
+        power_per_node = 0.5  # mW per node
+        
+        estimated_power = base_power + (circuit_nodes * power_per_node)
+        
+        # Ensure within budget
+        final_power = min(estimated_power, self.power_budget * 0.9)  # Leave 10% margin
+        
+        self.logger.debug(f"Estimated power consumption: {final_power:.1f}mW")
+        return final_power

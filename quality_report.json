@@ -1,0 +1,149 @@
+{
+  "timestamp": 1756094487.69047,
+  "overall_score": 0.4166666666666667,
+  "passed_gates": 2,
+  "total_gates": 6,
+  "generation_scores": {
+    "Generation 1": 0.4166666666666667,
+    "Generation 2": 0.4166666666666667,
+    "Generation 3": 0.33333333333333337
+  },
+  "gate_results": [
+    {
+      "name": "dependency_health",
+      "passed": true,
+      "score": 1.0,
+      "details": {
+        "total_dependencies": 0,
+        "available": 0,
+        "using_fallbacks": 0,
+        "missing": 0,
+        "health_score": 1.0,
+        "dependencies": {},
+        "python_version": "3.12.3",
+        "python_supported": true,
+        "disk_free_gb": 19.88738250732422,
+        "sufficient_disk": true
+      },
+      "execution_time": 0.0005791187286376953,
+      "error_message": null,
+      "suggestions": []
+    },
+    {
+      "name": "core_functionality",
+      "passed": false,
+      "score": 0.5,
+      "details": {
+        "tests_passed": 3,
+        "total_tests": 6,
+        "test_results": {
+          "imports": false,
+          "import_error": "No module named 'numpy'",
+          "compiler": false,
+          "compiler_error": "No module named 'numpy'",
+          "validation": false,
+          "validation_error": "cannot import name 'validate_input' from 'photonic_mlir.validation' (/root/repo/python/photonic_mlir/validation.py)",
+          "cache": true,
+          "monitoring": true,
+          "security": true
+        }
+      },
+      "execution_time": 0.0026521682739257812,
+      "error_message": null,
+      "suggestions": [
+        "Review failed module imports",
+        "Check dependency installation",
+        "Verify system configuration"
+      ]
+    },
+    {
+      "name": "security_validation",
+      "passed": true,
+      "score": 1.0,
+      "details": {
+        "blocked_attacks": 4,
+        "total_attacks": 4,
+        "test_results": [
+          {
+            "input": "'; DROP TABLE users;...",
+            "blocked": true,
+            "reason": "Exception raised (good)"
+          },
+          {
+            "input": "<script>alert('xss')...",
+            "blocked": true,
+            "reason": "Exception raised (good)"
+          },
+          {
+            "input": "../../etc/passwd...",
+            "blocked": true,
+            "reason": "Exception raised (good)"
+          },
+          {
+            "input": "__import__('os').sys...",
+            "blocked": true,
+            "reason": "Exception raised (good)"
+          }
+        ]
+      },
+      "execution_time": 0.0015668869018554688,
+      "error_message": null,
+      "suggestions": []
+    },
+    {
+      "name": "error_handling",
+      "passed": false,
+      "score": 0.0,
+      "details": {
+        "error": "No module named 'numpy'"
+      },
+      "execution_time": 0.0019996166229248047,
+      "error_message": null,
+      "suggestions": [
+        "Fix error handling test system"
+      ]
+    },
+    {
+      "name": "performance_benchmarks",
+      "passed": false,
+      "score": 0.0,
+      "details": {
+        "error": "No module named 'numpy'"
+      },
+      "execution_time": 0.0012142658233642578,
+      "error_message": null,
+      "suggestions": [
+        "Fix performance benchmarking system"
+      ]
+    },
+    {
+      "name": "integration_compatibility",
+      "passed": false,
+      "score": 0.0,
+      "details": {
+        "error": "'bool' object has no attribute 'get'"
+      },
+      "execution_time": 0.0011386871337890625,
+      "error_message": null,
+      "suggestions": [
+        "Fix integration testing system"
+      ]
+    }
+  ],
+  "deployment_ready": false,
+  "critical_issues": [
+    "Critical gate 'core_functionality' failed: None",
+    "Critical gate 'error_handling' failed: None"
+  ],
+  "recommendations": [
+    "Review failed module imports",
+    "Address failing quality gates before production deployment",
+    "Fix integration testing system",
+    "Verify system configuration",
+    "Fix performance benchmarking system",
+    "Fix error handling test system",
+    "Set up automated quality gate execution",
+    "Implement continuous quality monitoring",
+    "Check dependency installation"
+  ]
+}
