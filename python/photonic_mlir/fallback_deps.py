@@ -19,10 +19,12 @@ class FallbackPsutil:
             self.pid = pid or 1
             self._name = "python"
             self._memory_info = type('obj', (object,), {'rss': 50*1024*1024, 'vms': 100*1024*1024})()
+            self._cpu_times = type('obj', (object,), {'user': 1.0, 'system': 0.5})()
         
         def name(self): return self._name
         def memory_info(self): return self._memory_info
         def cpu_percent(self): return 5.0
+        def cpu_times(self): return self._cpu_times
         def is_running(self): return True
         def terminate(self): pass
         def kill(self): pass
@@ -50,6 +52,15 @@ class FallbackPsutil:
             'total': 100*1024*1024*1024,
             'used': 50*1024*1024*1024,
             'free': 50*1024*1024*1024
+        })()
+    
+    @staticmethod
+    def disk_io_counters():
+        return type('obj', (object,), {
+            'read_count': 1000,
+            'write_count': 500,
+            'read_bytes': 1024*1024,
+            'write_bytes': 512*1024
         })()
 
 class FallbackTorch:
