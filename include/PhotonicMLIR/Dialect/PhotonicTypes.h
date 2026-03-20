@@ -1,9 +1,0 @@
-#ifndef PHOTONIC_MLIR_DIALECT_PHOTONIC_TYPES_H
-#define PHOTONIC_MLIR_DIALECT_PHOTONIC_TYPES_H
-
-#include "mlir/IR/Types.h"
-
-#define GET_TYPEDEF_CLASSES
-#include "PhotonicMLIR/Dialect/PhotonicTypes.h.inc"
-
-#endif // PHOTONIC_MLIR_DIALECT_PHOTONIC_TYPES_H
